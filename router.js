@@ -15,13 +15,14 @@ router
     })
     .post("/shorturl", (req, res) => {
         const url = req.body.url;
+        console.log(`${req.url} ${JSON.stringify(req.body)}`)
         if (isValidUrl(url)) {
             dns.lookup(trimUrl(url), (err, address, family) => {
                 if (err) {
                     return returnError(res);
                 }
-                UrlModel.findOne({url}, (err, foundUrl) => {
-                    if (err) console.error(err);
+                UrlModel.findOne({url}, (urlNotFoundError, foundUrl) => {
+                    if (urlNotFoundError) console.error(urlNotFoundError);
                     if (foundUrl) {
                         res.json({
                             original_url: foundUrl.url,
@@ -31,14 +32,14 @@ router
                         UrlModel
                             .findOne()
                             .sort("-shortenedUrl")
-                            .exec((err, lastUrl) => {
-                                if (err) console.error(err);
+                            .exec((existingUrlNotFoundError, lastUrl) => {
+                                if (existingUrlNotFoundError) console.error(existingUrlNotFoundError);
                                 const newUrl = new UrlModel({
                                     url,
                                     shortenedUrl: ++lastUrl.shortenedUrl
                                 });
-                                newUrl.save((err, savedUrl) => {
-                                    if (err) console.error(err);
+                                newUrl.save((saveError, savedUrl) => {
+                                    if (saveError) console.error(saveError);
                                     res.json({
                                         original_url: savedUrl.url,
                                         short_url: savedUrl.shortenedUrl
@@ -53,6 +54,7 @@ router
         }
     })
     .get("/shorturl/:shortLink", (req, res) => {
+        console.log(`${req.url} ${req.params.shortLink}`)
         UrlModel.findOne({shortenedUrl: req.params.shortLink}, (err, urlDocument) => {
             if (err) console.error(err);
             if (!urlDocument) {
@@ -60,6 +62,7 @@ router
                     error: "invalid short url"
                 })
             }
+            console.log(`Found url: ${JSON.stringify(urlDocument)}`)
             res.redirect(urlDocument.url);
         });
     });
