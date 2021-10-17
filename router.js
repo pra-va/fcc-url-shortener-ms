@@ -82,11 +82,10 @@ const trimUrl = url => {
 
 const isValidUrl = url => {
     const containsProtocol = url.includes("http://") || url.includes("https://");
-    const containsWww = url.includes("www.");
-    const containsDots = (url.match(/\./g) || []).length > 1;
+    const containsDots = (url.match(/\./g) || []).length > 0;
     const containsNoTrailingDots = !url.includes("..");
 
-    return containsProtocol && containsWww && containsDots && containsNoTrailingDots;
+    return containsProtocol && containsDots && containsNoTrailingDots;
 }
 
 module.exports = router;
