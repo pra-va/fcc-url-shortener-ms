@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const {model} = require("mongoose");
+const dns = require("dns");
 require("./models");
 
 const UrlModel = model("URL");
@@ -42,6 +43,10 @@ router
                         });
                 }
             });
+        } else {
+            res.json({
+               error: "invalid url"
+            });
         }
     })
     .get("/shorturl/:shortLink", (req, res) => {
@@ -56,17 +61,24 @@ router
         });
     });
 
-const getLinkIndex = () => {
-
-}
-
 const isValidUrl = url => {
     const containsProtocol = url.includes("http://") || url.includes("https://");
     const containsWww = url.includes("www.");
     const containsDots = (url.match(/\./g) || []).length > 1;
-    const doesNotHaveTrailingDots = !url.includes("..");
 
-    return containsProtocol && containsWww && containsDots && doesNotHaveTrailingDots;
+    const fixedUrl = url
+        .replace("http://", "")
+        .replace("https://", "")
+        .split("/")[0];
+
+    dns.lookup(fixedUrl, (err, address, family) => {
+        if (err) {
+            console.error(err);
+            return false;
+        }
+        return containsProtocol && containsWww && containsDots;
+    });
+    return false;
 }
 
 module.exports = router;
