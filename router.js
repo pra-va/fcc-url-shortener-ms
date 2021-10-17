@@ -45,7 +45,7 @@ router
             });
         } else {
             res.json({
-               error: "invalid url"
+                error: "invalid url"
             });
         }
     })
@@ -65,20 +65,9 @@ const isValidUrl = url => {
     const containsProtocol = url.includes("http://") || url.includes("https://");
     const containsWww = url.includes("www.");
     const containsDots = (url.match(/\./g) || []).length > 1;
+    const containsNoTrailingDots = !url.includes("..");
 
-    const fixedUrl = url
-        .replace("http://", "")
-        .replace("https://", "")
-        .split("/")[0];
-
-    dns.lookup(fixedUrl, (err, address, family) => {
-        if (err) {
-            console.error(err);
-            return false;
-        }
-        return containsProtocol && containsWww && containsDots;
-    });
-    return false;
+    return containsProtocol && containsWww && containsDots ;
 }
 
 module.exports = router;
